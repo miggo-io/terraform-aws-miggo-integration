@@ -30,6 +30,7 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
 }
 
 resource "aws_iam_role" "cluster_interaction_role" {
+  name = "ClusterInteractionRole"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
