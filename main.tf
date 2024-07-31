@@ -123,5 +123,5 @@ resource "aws_lambda_invocation" "pingback" {
 
   lifecycle_scope = "CRUD"
 
-  depends_on = [aws_lambda_function.pingback_lambda]
+  depends_on = [aws_lambda_function.pingback_lambda, aws_iam_role.cluster_interaction_role]
 }
