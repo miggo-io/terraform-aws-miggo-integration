@@ -11,17 +11,20 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
           "ec2:Describe*",
           "eks:DescribeCluster",
           "eks:ListClusters",
-          "ecs:ListClusters",
-          "ecs:DescribeClusters",
-          "ecs:DescribeServices",
-          "ecs:ListServices",
-          "ecs:DescribeTasks",
-          "ecs:ListTasks",
+          "ecs:List*",
+          "ecs:Describe*",
+          "ecs:Get*",
           "elasticloadbalancing:Describe*",
           "elasticbeanstalk:List*",
           "elasticbeanstalk:Describe*",
           "lambda:List*",
-          "lambda:Get*"
+          "lambda:Get*",
+          "route53:List*",
+          "route53:Get*",
+          "waf:List*",
+          "waf:Get*",
+          "wafv2:List*",
+          "wafv2:Get*"
         ]
         Resource = "*"
       }
