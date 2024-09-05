@@ -18,7 +18,13 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
           "elasticbeanstalk:List*",
           "elasticbeanstalk:Describe*",
           "lambda:List*",
-          "lambda:Get*"
+          "lambda:Get*",
+          "route53:List*",
+          "route53:Get*",
+          "waf:List*",
+          "waf:Get*",
+          "wafv2:List*",
+          "wafv2:Get*"
         ]
         Resource = "*"
       }
