@@ -19,6 +19,7 @@ def handler(event, context):
         'RequestId': context.aws_request_id,
         'LogicalResourceId': event['LogicalResourceId'],
         'TenantId': os.environ.get('TENANT_ID'),
+        'ProjectId': os.environ.get('PROJECT_ID'),
         'TenantEmail': os.environ.get('TENANT_EMAIL')
     }
 

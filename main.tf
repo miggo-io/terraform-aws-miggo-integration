@@ -110,6 +110,7 @@ resource "aws_lambda_function" "pingback_lambda" {
   environment {
     variables = {
       TENANT_ID    = var.tenant_id
+      PROJECT_ID   = var.project_id
       TENANT_EMAIL = var.tenant_email
       WEBHOOK_URL  = var.webhook_url
     }

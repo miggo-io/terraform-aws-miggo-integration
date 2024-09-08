@@ -8,6 +8,11 @@ variable "tenant_id" {
   description = "Tenant ID"
 }
 
+variable "project_id" {
+  type        = string
+  description = "Project ID"
+}
+
 variable "tenant_email" {
   type        = string
   description = "Tenant Email"
