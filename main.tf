@@ -54,8 +54,6 @@ resource "aws_iam_role" "cluster_interaction_role" {
 
   managed_policy_arns = [aws_iam_policy.cluster_interaction_policy.arn]
   description         = "Miggo read-only role"
-
-  depends_on = [aws_lambda_invocation.pingback]
 }
 
 resource "aws_iam_role" "lambda_role" {
