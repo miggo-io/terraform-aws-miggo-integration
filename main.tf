@@ -110,6 +110,7 @@ resource "aws_lambda_function" "pingback_lambda" {
   environment {
     variables = {
       TENANT_ID    = var.tenant_id
+      PROJECT_ID   = var.project_id
       TENANT_EMAIL = var.tenant_email
       WEBHOOK_URL  = var.webhook_url
     }
@@ -118,6 +119,13 @@ resource "aws_lambda_function" "pingback_lambda" {
 
 resource "aws_lambda_invocation" "pingback" {
   function_name = aws_lambda_function.pingback_lambda.function_name
+
+  triggers = {
+    tenant_id    = var.tenant_id
+    tenant_email = var.tenant_email
+    webhook_url  = var.webhook_url
+    project_id   = var.project_id
+  }
 
   input = jsonencode({
     StackId           = "terraform-stack"
