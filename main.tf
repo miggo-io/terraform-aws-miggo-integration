@@ -8,6 +8,7 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
       {
         Effect = "Allow"
         Action = [
+          "organizations:DescribeAccount",
           "ec2:Describe*",
           "eks:DescribeCluster",
           "eks:ListClusters",
