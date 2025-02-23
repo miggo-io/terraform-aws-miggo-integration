@@ -25,7 +25,9 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
           "waf:List*",
           "waf:Get*",
           "wafv2:List*",
-          "wafv2:Get*"
+          "wafv2:Get*",
+          "cloudfront:List*",
+          "cloudfront:Get*"
         ]
         Resource = "*"
       }
