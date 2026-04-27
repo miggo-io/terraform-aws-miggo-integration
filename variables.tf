@@ -1,3 +1,8 @@
+variable "external_id" {
+  type        = string
+  description = "External ID for the AssumeRole policy"
+}
+
 variable "tenant_id" {
   type        = string
   description = "Tenant ID"
