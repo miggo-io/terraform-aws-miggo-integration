@@ -1,6 +1,7 @@
 resource "aws_iam_policy" "cluster_interaction_policy" {
   path        = "/"
   description = "Miggo read-only integration with AWS"
+  tags        = var.tags
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -57,6 +58,7 @@ resource "aws_iam_role" "cluster_interaction_role" {
 
   managed_policy_arns = [aws_iam_policy.cluster_interaction_policy.arn]
   description         = "Miggo read-only role"
+  tags                = var.tags
 }
 
 resource "aws_iam_role" "lambda_role" {
@@ -72,6 +74,7 @@ resource "aws_iam_role" "lambda_role" {
       }
     ]
   })
+  tags = var.tags
 }
 
 resource "aws_iam_role_policy" "lambda_policy" {
@@ -116,6 +119,8 @@ resource "aws_lambda_function" "pingback_lambda" {
       WEBHOOK_URL  = var.webhook_url
     }
   }
+
+  tags = var.tags
 }
 
 resource "aws_lambda_invocation" "pingback" {

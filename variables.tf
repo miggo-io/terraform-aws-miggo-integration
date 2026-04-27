@@ -17,3 +17,9 @@ variable "webhook_url" {
   type        = string
   description = "Miggo Webhook URL"
 }
+
+variable "tags" {
+  type        = map(string)
+  description = "Tags to apply to all created resources"
+  default     = {}
+}
