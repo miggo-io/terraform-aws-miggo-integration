@@ -48,7 +48,7 @@ resource "aws_iam_role" "cluster_interaction_role" {
         Action = "sts:AssumeRole"
         Condition = {
           StringEquals = {
-            "sts:ExternalId" = upper(var.tenant_id)
+            "sts:ExternalId" = var.external_id
           }
         }
       }
