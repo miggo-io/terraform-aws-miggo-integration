@@ -28,6 +28,7 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
           "waf:Get*",
           "wafv2:List*",
           "wafv2:Get*",
+          "wafv2:Describe*",
           "wafv2:CheckCapacity",
           "fms:List*",
           "fms:Get*",
