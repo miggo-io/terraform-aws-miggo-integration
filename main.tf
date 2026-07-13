@@ -118,7 +118,7 @@ resource "aws_lambda_function" "pingback_lambda" {
   function_name    = "MiggoPingbackLambdaFunction"
   role             = aws_iam_role.lambda_role.arn
   handler          = "lambda.handler"
-  runtime          = "python3.9"
+  runtime          = "python3.12"
   timeout          = 60
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
