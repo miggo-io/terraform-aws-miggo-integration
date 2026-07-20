@@ -10,12 +10,7 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
         Effect = "Allow"
         Action = [
           "organizations:DescribeAccount",
-          "ec2:Describe*",
-          "eks:DescribeCluster",
-          "eks:ListClusters",
-          "ecs:List*",
-          "ecs:Describe*",
-          "ecs:Get*",
+          "ec2:DescribeRegions",
           "elasticloadbalancing:Describe*",
           "elasticbeanstalk:List*",
           "elasticbeanstalk:Describe*",
