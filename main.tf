@@ -25,6 +25,14 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
           "wafv2:Get*",
           "wafv2:Describe*",
           "wafv2:CheckCapacity",
+          # ListResourcesForWebACL authorises against the protected resource's own
+          # service, one action per attachment type, so a Web ACL's attachments are
+          # invisible without each of these.
+          "appsync:ListResourcesForWebACL",
+          "cognito-idp:ListResourcesForWebACL",
+          "apprunner:ListAssociatedServicesForWebAcl",
+          "ec2:DescribeVerifiedAccessInstanceWebAclAssociations",
+          "bedrock-agentcore:GatewayListResourcesForWebACL",
           "fms:List*",
           "fms:Get*",
           "shield:Describe*",
