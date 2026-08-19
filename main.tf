@@ -11,38 +11,39 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
         Action = [
           "organizations:DescribeAccount",
           "ec2:DescribeRegions",
-          "elasticloadbalancing:Describe*",
           "elasticbeanstalk:List*",
           "elasticbeanstalk:Describe*",
           "lambda:List*",
           "lambda:Get*",
           "apigateway:GET",
+
+          # DNS enrichment: hosted zones and records behind domain and internet-facing discovery.
           "route53:List*",
           "route53:Get*",
+
+          # WAF coverage: Web ACLs, what each protects (one action per attachment type), and per-rule traffic.
           "waf:List*",
           "waf:Get*",
           "wafv2:List*",
           "wafv2:Get*",
           "wafv2:Describe*",
           "wafv2:CheckCapacity",
-          # ListResourcesForWebACL authorises against the protected resource's own
-          # service, one action per attachment type, so a Web ACL's attachments are
-          # invisible without each of these.
+          "elasticloadbalancing:Describe*",
           "appsync:ListResourcesForWebACL",
           "cognito-idp:ListResourcesForWebACL",
           "apprunner:ListAssociatedServicesForWebAcl",
           "ec2:DescribeVerifiedAccessInstanceWebAclAssociations",
           "bedrock-agentcore:GatewayListResourcesForWebACL",
-          "fms:List*",
-          "fms:Get*",
-          "shield:Describe*",
-          "shield:Get*",
-          "shield:List*",
           "cloudfront:List*",
           "cloudfront:Get*",
           "cloudwatch:GetMetricData",
           "cloudwatch:ListMetrics",
-          "cloudwatch:GetMetricStatistics"
+          "cloudwatch:GetMetricStatistics",
+          "fms:List*",
+          "fms:Get*",
+          "shield:Describe*",
+          "shield:Get*",
+          "shield:List*"
         ]
         Resource = "*"
       }
