@@ -39,6 +39,11 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
           "cloudwatch:GetMetricData",
           "cloudwatch:ListMetrics",
           "cloudwatch:GetMetricStatistics",
+
+          # WAF hits: read the Web ACL log group in CloudWatch Logs.
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams",
+          "logs:FilterLogEvents",
           "fms:List*",
           "fms:Get*",
           "shield:Describe*",
