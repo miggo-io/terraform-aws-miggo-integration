@@ -13,7 +13,7 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
           "organizations:DescribeAccount",
           "ec2:DescribeRegions",
 
-          # Elastic Beanstalk inventory. DescribeConfigurationSettings is left out: it returns environment option values.
+          # Elastic Beanstalk inventory: applications and environments.
           "elasticbeanstalk:List*",
           "elasticbeanstalk:DescribeAccountAttributes",
           "elasticbeanstalk:DescribeApplicationVersions",
@@ -52,7 +52,7 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
           "cloudwatch:ListMetrics",
           "cloudwatch:GetMetricStatistics",
 
-          # WAF logs: these two actions don't support resource scoping.
+          # WAF hits: find Web ACL log groups and manage log queries.
           "logs:DescribeLogGroups",
           "logs:StopQuery",
 
@@ -65,7 +65,7 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
         Resource = "*"
       },
       {
-        # API and custom-domain listings only. Keys, stage variables and integrations stay unreadable.
+        # API Gateway inventory: APIs, routes and custom domains.
         Sid    = "ApiGatewayInventory"
         Effect = "Allow"
         Action = "apigateway:GET"
@@ -78,7 +78,7 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
         ]
       },
       {
-        # WAF only writes to log groups, buckets and streams named aws-waf-logs-*.
+        # WAF hits: read Web ACL logs from CloudWatch Logs, S3 and Firehose.
         Sid    = "WafLogsCloudWatch"
         Effect = "Allow"
         Action = [
@@ -103,7 +103,7 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
         Resource = "arn:aws:s3:::aws-waf-logs-*/*AWSLogs/*/WAFLogs/*"
       },
       {
-        # SSE-KMS encrypted WAF log objects, decrypted only through S3 for those buckets.
+        # WAF hits: read KMS-encrypted Web ACL log objects in S3.
         Sid      = "WafLogsS3Decrypt"
         Effect   = "Allow"
         Action   = "kms:Decrypt"
