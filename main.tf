@@ -7,15 +7,26 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
     Version = "2012-10-17"
     Statement = [
       {
+        Sid    = "MiggoReadOnly"
         Effect = "Allow"
         Action = [
           "organizations:DescribeAccount",
           "ec2:DescribeRegions",
+
+          # Elastic Beanstalk inventory. DescribeConfigurationSettings is left out: it returns environment option values.
           "elasticbeanstalk:List*",
-          "elasticbeanstalk:Describe*",
-          "lambda:List*",
-          "lambda:Get*",
-          "apigateway:GET",
+          "elasticbeanstalk:DescribeAccountAttributes",
+          "elasticbeanstalk:DescribeApplicationVersions",
+          "elasticbeanstalk:DescribeApplications",
+          "elasticbeanstalk:DescribeConfigurationOptions",
+          "elasticbeanstalk:DescribeEnvironmentHealth",
+          "elasticbeanstalk:DescribeEnvironmentManagedActionHistory",
+          "elasticbeanstalk:DescribeEnvironmentManagedActions",
+          "elasticbeanstalk:DescribeEnvironmentResources",
+          "elasticbeanstalk:DescribeEnvironments",
+          "elasticbeanstalk:DescribeEvents",
+          "elasticbeanstalk:DescribeInstancesHealth",
+          "elasticbeanstalk:DescribePlatformVersion",
 
           # DNS enrichment: hosted zones and records behind domain and internet-facing discovery.
           "route53:List*",
@@ -34,16 +45,17 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
           "apprunner:ListAssociatedServicesForWebAcl",
           "ec2:DescribeVerifiedAccessInstanceWebAclAssociations",
           "bedrock-agentcore:GatewayListResourcesForWebACL",
+          "amplify:ListResourcesForWebACL",
           "cloudfront:List*",
           "cloudfront:Get*",
           "cloudwatch:GetMetricData",
           "cloudwatch:ListMetrics",
           "cloudwatch:GetMetricStatistics",
 
-          # WAF hits: read the Web ACL log group in CloudWatch Logs.
+          # WAF logs: these two actions don't support resource scoping.
           "logs:DescribeLogGroups",
-          "logs:DescribeLogStreams",
-          "logs:FilterLogEvents",
+          "logs:StopQuery",
+
           "fms:List*",
           "fms:Get*",
           "shield:Describe*",
@@ -51,6 +63,63 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
           "shield:List*"
         ]
         Resource = "*"
+      },
+      {
+        # API and custom-domain listings only. Keys, stage variables and integrations stay unreadable.
+        Sid    = "ApiGatewayInventory"
+        Effect = "Allow"
+        Action = "apigateway:GET"
+        Resource = [
+          "arn:aws:apigateway:*::/restapis",
+          "arn:aws:apigateway:*::/apis",
+          "arn:aws:apigateway:*::/apis/*/routes",
+          "arn:aws:apigateway:*::/domainnames",
+          "arn:aws:apigateway:*::/domainnames/*"
+        ]
+      },
+      {
+        # WAF only writes to log groups, buckets and streams named aws-waf-logs-*.
+        Sid    = "WafLogsCloudWatch"
+        Effect = "Allow"
+        Action = [
+          "logs:FilterLogEvents",
+          "logs:GetLogEvents",
+          "logs:DescribeLogStreams",
+          "logs:StartQuery",
+          "logs:GetQueryResults"
+        ]
+        Resource = "arn:aws:logs:*:*:log-group:aws-waf-logs-*"
+      },
+      {
+        Sid      = "WafLogsS3Buckets"
+        Effect   = "Allow"
+        Action   = ["s3:ListBucket", "s3:GetBucketLocation"]
+        Resource = "arn:aws:s3:::aws-waf-logs-*"
+      },
+      {
+        Sid      = "WafLogsS3Objects"
+        Effect   = "Allow"
+        Action   = "s3:GetObject"
+        Resource = "arn:aws:s3:::aws-waf-logs-*/*AWSLogs/*/WAFLogs/*"
+      },
+      {
+        # SSE-KMS encrypted WAF log objects, decrypted only through S3 for those buckets.
+        Sid      = "WafLogsS3Decrypt"
+        Effect   = "Allow"
+        Action   = "kms:Decrypt"
+        Resource = "*"
+        Condition = {
+          StringLike = {
+            "kms:ViaService"                   = "s3.*.amazonaws.com"
+            "kms:EncryptionContext:aws:s3:arn" = "arn:aws:s3:::aws-waf-logs-*"
+          }
+        }
+      },
+      {
+        Sid      = "WafLogsFirehoseDiscovery"
+        Effect   = "Allow"
+        Action   = "firehose:DescribeDeliveryStream"
+        Resource = "arn:aws:firehose:*:*:deliverystream/aws-waf-logs-*"
       }
     ]
   })
@@ -110,7 +179,10 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
-        Resource = "arn:aws:logs:*:*:*"
+        Resource = [
+          "arn:aws:logs:*:*:log-group:/aws/lambda/${aws_lambda_function.pingback_lambda.function_name}",
+          "arn:aws:logs:*:*:log-group:/aws/lambda/${aws_lambda_function.pingback_lambda.function_name}:*"
+        ]
       }
     ]
   })
@@ -160,5 +232,5 @@ resource "aws_lambda_invocation" "pingback" {
 
   lifecycle_scope = "CRUD"
 
-  depends_on = [aws_lambda_function.pingback_lambda, aws_iam_role.cluster_interaction_role]
+  depends_on = [aws_lambda_function.pingback_lambda, aws_iam_role.cluster_interaction_role, aws_iam_role_policy.lambda_policy]
 }
