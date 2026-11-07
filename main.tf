@@ -148,6 +148,11 @@ resource "aws_iam_role" "cluster_interaction_role" {
   managed_policy_arns = [aws_iam_policy.cluster_interaction_policy.arn]
   description         = "Miggo read-only role"
   tags                = var.tags
+
+  # A rename keeps the old role until Miggo has been told about the new one.
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_iam_role" "lambda_role" {

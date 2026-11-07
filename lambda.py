@@ -33,14 +33,17 @@ def handler(event, context):
             headers={'Content-Type': 'application/json'},
             timeout=urllib3.Timeout(total=10),
         )
-
-        return {
-            'statusCode': response.status,
-            'body': json.dumps(f'{tf_action.capitalize()} request processed')
-        }
+        status = response.status
     except Exception as e:
         print(e)
-        return {
-            'statusCode': 500,
-            'body': json.dumps(f'Error processing {tf_action} request')
-        }
+        status = None
+
+    # A failed create or update fails the apply; destroying never depends on Miggo.
+    if status != 200 and tf_action != 'delete':
+        reason = f'answered {status}' if status else 'was unreachable'
+        raise RuntimeError(f'Miggo webhook {reason} for the {tf_action} request')
+
+    return {
+        'statusCode': status or 500,
+        'body': json.dumps(f'{tf_action.capitalize()} request processed'),
+    }
