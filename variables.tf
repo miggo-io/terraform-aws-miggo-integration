@@ -1,3 +1,14 @@
+variable "role_name" {
+  type        = string
+  description = "Name of the IAM role Miggo assumes; set it to match your IAM naming standards"
+  default     = "ClusterInteractionRole"
+
+  validation {
+    condition     = can(regex("^[\\w+=,.@-]{1,64}$", var.role_name))
+    error_message = "role_name must be 1-64 characters of letters, digits and +=,.@_-."
+  }
+}
+
 variable "external_id" {
   type        = string
   description = "External ID for the AssumeRole policy"

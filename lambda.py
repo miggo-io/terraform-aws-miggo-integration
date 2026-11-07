@@ -1,11 +1,10 @@
 import json
-import boto3
-import urllib3
 import os
 
-def handler(event, context):
-    http = urllib3.PoolManager()
+import urllib3
 
+
+def handler(event, context):
     tf_action = event['tf']['action']
 
     account_id = context.invoked_function_arn.split(":")[4]
@@ -18,20 +17,21 @@ def handler(event, context):
         'StackId': event['StackId'],
         'RequestId': context.aws_request_id,
         'LogicalResourceId': event['LogicalResourceId'],
-        'TenantId': os.environ.get('TENANT_ID'),
-        'ProjectId': os.environ.get('PROJECT_ID'),
-        'TenantEmail': os.environ.get('TENANT_EMAIL')
+        'TenantId': event.get('TenantId', os.environ.get('TENANT_ID')),
+        'ProjectId': event.get('ProjectId', os.environ.get('PROJECT_ID')),
+        'TenantEmail': event.get('TenantEmail', os.environ.get('TENANT_EMAIL')),
+        'RoleArn': event.get('RoleArn'),
     }
 
     webhook_url = os.environ.get('WEBHOOK_URL')
 
     try:
-        encoded_data = json.dumps(diagnostic_data).encode('utf-8')
-        response = http.request(
+        response = urllib3.PoolManager().request(
             'POST',
             webhook_url,
-            body=encoded_data,
-            headers={'Content-Type': 'application/json'}
+            body=json.dumps(diagnostic_data).encode('utf-8'),
+            headers={'Content-Type': 'application/json'},
+            timeout=urllib3.Timeout(total=10),
         )
 
         return {
