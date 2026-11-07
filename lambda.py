@@ -38,12 +38,8 @@ def handler(event, context):
         print(e)
         status = None
 
-    # A failed create or update fails the apply; destroying never depends on Miggo.
-    if status != 200 and tf_action != 'delete':
-        reason = f'answered {status}' if status else 'was unreachable'
-        raise RuntimeError(f'Miggo webhook {reason} for the {tf_action} request')
-
+    # The module's postcondition fails the apply on anything but a 200.
     return {
-        'statusCode': status or 500,
+        'statusCode': status or 0,
         'body': json.dumps(f'{tf_action.capitalize()} request processed'),
     }

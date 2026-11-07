@@ -29,3 +29,13 @@ module "miggo-integration" {
 | `external_id` | External ID required by the role's trust policy | required |
 | `role_name` | Name of the IAM role Miggo assumes. Changing it and re-applying renames the role; Miggo picks up the new one | `ClusterInteractionRole` |
 | `tags` | Tags applied to every created resource | `{}` |
+
+## Troubleshooting
+
+If `terraform apply` fails with "Miggo did not accept the integration", fix the cause (for example the tenant or project id), then re-send the registration:
+
+```shell
+terraform apply -replace='module.miggo-integration.aws_lambda_invocation.pingback'
+```
+
+Until then, a renamed role's predecessor is kept, so Miggo keeps working with it.

@@ -245,4 +245,13 @@ resource "aws_lambda_invocation" "pingback" {
   lifecycle_scope = "CRUD"
 
   depends_on = [aws_lambda_function.pingback_lambda, aws_iam_role.cluster_interaction_role, aws_iam_role_policy.lambda_policy]
+
+  # Blocks the apply, and later plans, until Miggo accepts the pingback, so a renamed
+  # role's predecessor is never destroyed while Miggo still points at it.
+  lifecycle {
+    postcondition {
+      condition     = jsondecode(self.result).statusCode == 200
+      error_message = "Miggo did not accept the integration (webhook answered ${jsondecode(self.result).statusCode}). Fix the cause, then re-send it: terraform apply -replace='<this module>.aws_lambda_invocation.pingback'."
+    }
+  }
 }
