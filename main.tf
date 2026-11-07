@@ -126,7 +126,7 @@ resource "aws_iam_policy" "cluster_interaction_policy" {
 }
 
 resource "aws_iam_role" "cluster_interaction_role" {
-  name = "ClusterInteractionRole"
+  name = var.role_name
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -148,6 +148,11 @@ resource "aws_iam_role" "cluster_interaction_role" {
   managed_policy_arns = [aws_iam_policy.cluster_interaction_policy.arn]
   description         = "Miggo read-only role"
   tags                = var.tags
+
+  # A rename keeps the old role until Miggo has been told about the new one.
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_iam_role" "lambda_role" {
@@ -225,9 +230,16 @@ resource "aws_lambda_invocation" "pingback" {
     project_id   = var.project_id
   }
 
+  # Values Miggo must see on every action live in `input`: the provider replays the
+  # last input on delete, and changing it is an in-place update rather than a
+  # replacement (keep `triggers` unchanged, it forces replacement).
   input = jsonencode({
     StackId           = "terraform-stack"
     LogicalResourceId = "PingbackTerraformResource"
+    TenantId          = var.tenant_id
+    ProjectId         = var.project_id
+    TenantEmail       = var.tenant_email
+    RoleArn           = aws_iam_role.cluster_interaction_role.arn
   })
 
   lifecycle_scope = "CRUD"
