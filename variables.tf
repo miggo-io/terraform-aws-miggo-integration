@@ -9,6 +9,12 @@ variable "role_name" {
   }
 }
 
+variable "enable_rule_deployment" {
+  type        = bool
+  description = "Let Miggo deploy WAF rules to your web ACLs; monitoring needs only read access"
+  default     = false
+}
+
 variable "external_id" {
   type        = string
   description = "External ID for the AssumeRole policy"

@@ -155,6 +155,54 @@ resource "aws_iam_role" "cluster_interaction_role" {
   }
 }
 
+data "aws_caller_identity" "current" {
+  count = var.enable_rule_deployment ? 1 : 0
+}
+
+data "aws_partition" "current" {
+  count = var.enable_rule_deployment ? 1 : 0
+}
+
+locals {
+  wafv2_arn_prefix = var.enable_rule_deployment ? "arn:${data.aws_partition.current[0].partition}:wafv2:*:${data.aws_caller_identity.current[0].account_id}" : ""
+}
+
+# Rule deployment: only when enable_rule_deployment is true.
+resource "aws_iam_role_policy" "rule_deployment" {
+  count = var.enable_rule_deployment ? 1 : 0
+  name  = "MiggoRuleDeployment"
+  role  = aws_iam_role.cluster_interaction_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        # Miggo's own rule groups, named MIG-WR-*.
+        Sid    = "MiggoRuleGroups"
+        Effect = "Allow"
+        Action = [
+          "wafv2:CreateRuleGroup",
+          "wafv2:GetRuleGroup",
+          "wafv2:UpdateRuleGroup",
+          "wafv2:DeleteRuleGroup",
+          "wafv2:TagResource",
+        ]
+        Resource = "${local.wafv2_arn_prefix}:*/rulegroup/MIG-WR-*/*"
+      },
+      {
+        # Attach Miggo's rule group to the web ACLs you deploy to.
+        Sid    = "AttachToWebAcls"
+        Effect = "Allow"
+        Action = "wafv2:UpdateWebACL"
+        Resource = [
+          "${local.wafv2_arn_prefix}:*/webacl/*/*",
+          "${local.wafv2_arn_prefix}:*/rulegroup/MIG-WR-*/*",
+        ]
+      },
+    ]
+  })
+}
+
 resource "aws_iam_role" "lambda_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
