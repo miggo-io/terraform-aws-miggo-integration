@@ -155,6 +155,40 @@ resource "aws_iam_role" "cluster_interaction_role" {
   }
 }
 
+# The capability for Miggo to deploy WAF rules: only when
+# enable_rule_deployment_capability is true.
+resource "aws_iam_role_policy" "rule_deployment_capability" {
+  count = var.enable_rule_deployment_capability ? 1 : 0
+  name  = "MiggoRuleDeploymentCapability"
+  role  = aws_iam_role.cluster_interaction_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        # Miggo's own rule groups, named Miggo-Rules-*.
+        Sid    = "RuleDeploymentCapabilityMiggoRuleGroups"
+        Effect = "Allow"
+        Action = [
+          "wafv2:CreateRuleGroup",
+          "wafv2:UpdateRuleGroup",
+          "wafv2:DeleteRuleGroup",
+          "wafv2:TagResource",
+        ]
+        Resource = "arn:aws:wafv2:*:*:*/rulegroup/Miggo-Rules-*/*"
+      },
+      {
+        # Attaching Miggo's rule group rewrites the web ACL, and AWS checks this
+        # action on every IP set, regex set and rule group its rules reference.
+        Sid      = "RuleDeploymentCapabilityWebAcls"
+        Effect   = "Allow"
+        Action   = "wafv2:UpdateWebACL"
+        Resource = "*"
+      },
+    ]
+  })
+}
+
 resource "aws_iam_role" "lambda_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
