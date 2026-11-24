@@ -155,49 +155,35 @@ resource "aws_iam_role" "cluster_interaction_role" {
   }
 }
 
-data "aws_caller_identity" "current" {
-  count = var.enable_rule_deployment ? 1 : 0
-}
-
-data "aws_partition" "current" {
-  count = var.enable_rule_deployment ? 1 : 0
-}
-
-locals {
-  wafv2_arn_prefix = var.enable_rule_deployment ? "arn:${data.aws_partition.current[0].partition}:wafv2:*:${data.aws_caller_identity.current[0].account_id}" : ""
-}
-
-# Rule deployment: only when enable_rule_deployment is true.
-resource "aws_iam_role_policy" "rule_deployment" {
-  count = var.enable_rule_deployment ? 1 : 0
-  name  = "MiggoRuleDeployment"
+# The capability for Miggo to deploy WAF rules: only when
+# enable_rule_deployment_capability is true.
+resource "aws_iam_role_policy" "rule_deployment_capability" {
+  count = var.enable_rule_deployment_capability ? 1 : 0
+  name  = "MiggoRuleDeploymentCapability"
   role  = aws_iam_role.cluster_interaction_role.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        # Miggo's own rule groups, named MIG-WR-*.
-        Sid    = "MiggoRuleGroups"
+        # Miggo's own rule groups, named Miggo-Rules-*.
+        Sid    = "RuleDeploymentCapabilityMiggoRuleGroups"
         Effect = "Allow"
         Action = [
           "wafv2:CreateRuleGroup",
-          "wafv2:GetRuleGroup",
           "wafv2:UpdateRuleGroup",
           "wafv2:DeleteRuleGroup",
           "wafv2:TagResource",
         ]
-        Resource = "${local.wafv2_arn_prefix}:*/rulegroup/MIG-WR-*/*"
+        Resource = "arn:aws:wafv2:*:*:*/rulegroup/Miggo-Rules-*/*"
       },
       {
-        # Attach Miggo's rule group to the web ACLs you deploy to.
-        Sid    = "AttachToWebAcls"
-        Effect = "Allow"
-        Action = "wafv2:UpdateWebACL"
-        Resource = [
-          "${local.wafv2_arn_prefix}:*/webacl/*/*",
-          "${local.wafv2_arn_prefix}:*/rulegroup/MIG-WR-*/*",
-        ]
+        # Attaching Miggo's rule group rewrites the web ACL, and AWS checks this
+        # action on every IP set, regex set and rule group its rules reference.
+        Sid      = "RuleDeploymentCapabilityWebAcls"
+        Effect   = "Allow"
+        Action   = "wafv2:UpdateWebACL"
+        Resource = "*"
       },
     ]
   })

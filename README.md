@@ -28,7 +28,7 @@ module "miggo-integration" {
 | `webhook_url` | Miggo webhook the module reports the integration to | required |
 | `external_id` | External ID required by the role's trust policy | required |
 | `role_name` | Name of the IAM role Miggo assumes. Changing it and re-applying renames the role; Miggo picks up the new one | `ClusterInteractionRole` |
-| `enable_rule_deployment` | Also let Miggo deploy WAF rules to your web ACLs: adds an inline `MiggoRuleDeployment` policy for rule groups named `MIG-WR-*` and `wafv2:UpdateWebACL`. Monitoring works without it | `false` |
+| `enable_rule_deployment_capability` | Also give Miggo the capability to deploy WAF rules to your web ACLs: adds an inline `MiggoRuleDeploymentCapability` policy for rule groups named `Miggo-Rules-*` and `wafv2:UpdateWebACL`. Monitoring works without it | `false` |
 | `tags` | Tags applied to every created resource | `{}` |
 
 ## Troubleshooting

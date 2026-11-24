@@ -9,9 +9,9 @@ variable "role_name" {
   }
 }
 
-variable "enable_rule_deployment" {
+variable "enable_rule_deployment_capability" {
   type        = bool
-  description = "Let Miggo deploy WAF rules to your web ACLs; monitoring needs only read access"
+  description = "Give Miggo the capability to deploy WAF rules to your web ACLs; monitoring needs only read access"
   default     = false
 }
 
